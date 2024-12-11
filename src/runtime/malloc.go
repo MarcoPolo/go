@@ -980,7 +980,12 @@ func (c *mcache) nextFree(spc spanClass) (v gclinkptr, s *mspan, shouldhelpgc bo
 // See go.dev/issue/67401.
 //
 //go:linkname mallocgc
-func mallocgc(size uintptr, typ *_type, needzero bool) unsafe.Pointer {
+func mallocgc(size uintptr, typ *_type, needzero bool) (ptr unsafe.Pointer) {
+	if typ != nil && typ.HasName() {
+		mt := rtype{typ}
+		defer func() { println("$$$", ptr, mt.string()) }()
+	}
+
 	if gcphase == _GCmarktermination {
 		throw("mallocgc called with gcphase == _GCmarktermination")
 	}
